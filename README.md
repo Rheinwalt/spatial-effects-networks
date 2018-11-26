@@ -3,7 +3,7 @@
 
 This provides a set of Python functions that implement concepts as proposed in the corresponding study about spatial effects in network analyses (see [DOI: 10.1209/0295-5075/100/28002](http://dx.doi.org/10.1209/0295-5075/100/28002 "Rheinwalt et al., Boundary effects in network measures of spatially embedded networks (2012)")). The fundamental idea is to quantify the influence of the spatial embedding on network measures. This is done by constructing an ensemble of spatially embedded random networks (SERN) that share the same spatial embedding and link probability depending on link length as the original network of interest. A network measure on such a set of surrogate networks quantifies how that given network measure is affected by the spatial embedding.
 
-The provided set of Python functions are explained in the following example of the global flight network. Considered are all flights from [openflights.org](https://openflights.org/data.html) as an undirected network and the focus is on the network measure [eigenvector centrality](https://en.wikipedia.org/wiki/Eigenvector_centrality) as implemented by [graph tool](https://en.wikipedia.org/wiki/Eigenvector_centrality) and how it is influenced by the location of airports (spatial embedding).
+The provided set of Python functions are explained in the following example of the global flight network. Considered are all flights from [openflights.org](https://openflights.org/data.html) as an undirected network and the focus is on the network measure [eigenvector centrality](https://en.wikipedia.org/wiki/Eigenvector_centrality) as implemented by [graph tool](https://graph-tool.skewed.de/static/doc/centrality.html#graph_tool.centrality.eigenvector) and how it is influenced by the location of airports (spatial embedding).
 
 For this we import all functions from [sern.py](./sern.py) as well as graph tool and a few other standard Python modules.
 
@@ -13,7 +13,7 @@ For this we import all functions from [sern.py](./sern.py) as well as graph tool
     from scipy.stats import percentileofscore
     import graph_tool.all as gt
 
-Now we can load all airports from the file *nodes* and all flight routes from the file *links*.
+Now we can load all airports from the file [nodes](./nodes) and all flight routes from the file [links](./nodes).
 
     ids, lon, lat = np.loadtxt('nodes', unpack = True)
     links = np.loadtxt('links', dtype = 'int')
