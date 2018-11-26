@@ -13,7 +13,7 @@ For this we import all functions from [sern.py](./sern.py) as well as graph tool
     from scipy.stats import percentileofscore
     import graph_tool.all as gt
 
-Now we can load all airports from the file [nodes](./nodes) and all flight routes from the file [links](./nodes).
+Now we can load all airports from the file [nodes](./nodes) and all flight routes from the file [links](./links).
 
     ids, lon, lat = np.loadtxt('nodes', unpack = True)
     links = np.loadtxt('links', dtype = 'int')
@@ -58,3 +58,4 @@ In *vo* we have the original measure for each airport and in *var* we have a dis
 
 One interpretation of these results could be, that due to the high density of airports in Europe and the US (east coast) the expected eigenvector centrality is high given the observed link probability depending on distance (see B). However, not all airports actually have such a high centrality (see blue airports in C), but a few hubs have even higher centralities (see red airports in C). In terms of percentiles the ensemble of SERN can also be seen as a NULL model. In that sense many airports in coastal regions have a higher eigenvector centrality than expected (see red airports in D).
 
+The measure eigenvector centrality is just a place holder, everything done above could also be done with another measure such as shortest-path edge betweenness, closeness centrality, random walk betweenness, etc.
