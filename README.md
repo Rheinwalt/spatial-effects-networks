@@ -20,7 +20,7 @@ Now we can load all airports from the file *nodes* and all flight routes from th
 
 Then we construct the adjacency matrix and edge list by:
 
-    A, b = AdjacencyMatrix(ids, links)
+    A, b = sn.AdjacencyMatrix(ids, links)
     lon, lat = lon[b], lat[b]
     n = A.shape[0]
     A[np.tril_indices(n)] = 0
@@ -29,30 +29,32 @@ Then we construct the adjacency matrix and edge list by:
 
 Using graph tool we construct a graph object and measure the eigenvector centrality of the original network:
 
-    g = Graph(edges, n)
+    g = sn.Graph(edges, n)
     _, v = gt.eigenvector(g)
     vo = np.array(v.a)
 
-In order to derive the link probability depending on the spatial length of links we need to compute all spatial distances between airports and round them to appropriatly scaled integers. This allows us to use distances as indices for arrays.
+In order to derive the link probability depending on the spatial length of links we need to compute all spatial distances between airports and round them to appropriately scaled integers. This allows us to use distances as indices for arrays.
 
-    D, x = IntegerDistances(lat, lon)
+    D, x = sn.IntegerDistances(lat, lon)
 
 With these integer distances we can derive the link probability:
 
-    p = LinkProbability(A, D)
+    p = sn.LinkProbability(A, D)
 
 Finally, we construct an ensemble of 1000 surrogate networks and measure the eigenvector centrality on each of them.
 
     M = 1000
     var = np.zeros((M, n))
     for i in range(M):
-        e = SernEdges(D, p, n)
-        g = Graph(e, n)
+        e = sn.SernEdges(D, p, n)
+        g = sn.Graph(e, n)
         _, v = gt.eigenvector(g)
         v = np.array(v.a)
         var[i,:] = v
 
-In *vo* we have the original measure for each airport and in *var* we have a distribution of the measure for each airport.
+In *vo* we have the original measure for each airport and in *var* we have a distribution of the measure for each airport. In [sern_example.py](./sern_example.py "Eigenvector centrality example for the global flight network") the eigenvector centrality of the original network (A) is shown together with the expected eigenvector centrality due to the spatial embedding (B), as well as the difference between the two (C), and the percentiles of the measure on the original network in the distribution of measures in *var* (D). I.e., A shows *vo*, B shows *var.mean(axis = 0)*, C shows *vo - var.mean(axis = 0)*, and D shows *\[percentileofscore(var[:,i], vo[i]) for i in range(n)\]*.
 
 ![example](./sern_example.png "Eigenvector centrality example for the global flight network")
+
+One interpretation of these results could be, that due to the high density of airports in Europe and the US (east coast) the expected eigenvector centrality is high given the observed link probability depending on distance (see B). However, not all airports actually have such a high centrality (see blue airports in C), but a few hubs have even higher centralities (see red airports in C). In terms of percentiles the ensemble of SERN can also be seen as a NULL model. In that sense many airports in coastal regions have a higher eigenvector centrality than expected (see red airports in D).
 
