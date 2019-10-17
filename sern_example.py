@@ -1,6 +1,4 @@
 import numpy as np
-#import matplotlib as mpl
-#mpl.use('Agg')
 from matplotlib import pyplot as pl
 from scipy.stats import percentileofscore
 import graph_tool.all as gt
@@ -28,7 +26,9 @@ print('original measure ..')
 g = Graph(edges, n)
 _, v = gt.eigenvector(g)
 vo = np.array(v.a)
-var = np.zeros((1000, len(vo)))
+
+nserns = 1000
+var = np.zeros((nserns, len(vo)))
 
 print('measure on SERNs ..')
 for i in range(var.shape[0]):
@@ -39,7 +39,7 @@ for i in range(var.shape[0]):
     var[i] = v
 
 print('plot full example ..')
-fg, ax = pl.subplots(2, 2, figsize = (13.66, 7.68))
+fg, ax = pl.subplots(2, 2, figsize = (19.2, 10.8))
 
 # original measure
 c = vo

@@ -33,13 +33,23 @@ Using graph tool we construct a graph object and measure the eigenvector central
     _, v = gt.eigenvector(g)
     vo = np.array(v.a)
 
+Note that graph tools is just an example, see [sern_example_minimal.py](./sern_example_minimal.py) for an example without graph tools and the network measure degree centrality.
+
 In order to derive the link probability depending on the spatial length of links we need to compute all spatial distances between airports and round them to appropriately scaled integers. This allows us to use distances as indices for arrays.
 
-    D, x = sn.IntegerDistances(lat, lon)
+    D, x = sn.IntegerDistances(lat, lon, scale = 50)
 
-With these integer distances we can derive the link probability:
+Note that integer distances are not only rounded to integers but also logarithmically scaled. I.e., distances are logarithmically binned. The also returned x array gives for each distance bin index the original distance in kilometers. With the integer distances D and the adjacency matrix A (both in upper-triangle format) we can derive the link probability for each distance bin:
 
     p = sn.LinkProbability(A, D)
+
+For your personal example you should check the number of bins and the noise of the estimated link probability. You can use the x array returned by IntegerDistances() as the correct x-axis array for the link probability p (see also [link_prob_show.py](./link_prob_show.py)):
+
+    pl.semilogx(x, p, 'bo')
+    pl.ylabel('Link probability given distance')
+    pl.xlabel('Distance [km]')
+
+![link probability given distance](./link_prob_distance.png "Link probability given the link distance")
 
 Finally, we construct an ensemble of 1000 surrogate networks and measure the eigenvector centrality on each of them.
 
@@ -58,4 +68,5 @@ In *vo* we have the original measure for each airport and in *var* we have a dis
 
 One interpretation of these results could be, that due to the high density of airports in Europe and the US (east coast) the expected eigenvector centrality is high given the observed link probability depending on distance (see B). However, not all airports actually have such a high centrality (see blue airports in C), but a few hubs have even higher centralities (see red airports in C). In terms of percentiles the ensemble of SERN can also be seen as a NULL model. In that sense many airports in coastal regions have a higher eigenvector centrality than expected (see red airports in D).
 
-The measure eigenvector centrality is just a place holder, everything done above could also be done with another measure such as shortest-path edge betweenness, closeness centrality, random walk betweenness, etc.
+The measure eigenvector centrality is just a place holder, everything done above could also be done with another measure such as shortest-path edge betweenness, closeness centrality, random walk betweenness. For a minimal example using degree centrality see [sern_example_minimal.py](./sern_example_minimal.py). A simple MPI version of the degree centrality example is given by [sern_example_mpi4py.py](sern_example_mpi4py.py).
+

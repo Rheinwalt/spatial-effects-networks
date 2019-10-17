@@ -73,19 +73,80 @@ def SernEdges(D, p, n):
     edges = np.transpose(A.nonzero())
     return edges
 
-def Graph(e, n):
-    import graph_tool.all as gt
-
-    g = gt.Graph(directed = False)
-    g.add_vertex(n)
-    g.add_edge_list(e)
-    return g
-
 def Scale(v):
+    """Scatter plot dot scale."""
     s = v.copy()
     s = s.astype('float')
     s -= s.min()
     s /= s.max()
     s *= 10
     return s
+
+from matplotlib import pyplot as pl
+from scipy.stats import percentileofscore
+
+print('load data from <nodes> and <links> ..')
+ids, lon, lat = np.loadtxt('nodes', unpack = True)
+links = np.loadtxt('links', dtype = 'int')
+
+print('construct adjacency matrix and edge list ..')
+A, b = AdjacencyMatrix(ids, links)
+lon, lat = lon[b], lat[b]
+n = A.shape[0]
+A[np.tril_indices(n)] = 0
+edges = np.transpose(A.nonzero())
+A = A[np.triu_indices(n, 1)]
+
+print('get all link distances ..')
+D, x = IntegerDistances(lat, lon)
+
+print('derive link probability ..')
+p = LinkProbability(A, D)
+
+print('original measure ..')
+v = np.bincount(edges.ravel())
+
+nserns = 1000
+var = np.zeros((nserns, n))
+
+print('measure on SERNs ..')
+for i in range(var.shape[0]):
+    edges = SernEdges(D, p, n)
+    var[i] = np.bincount(edges.ravel())
+
+print('plot full example ..')
+fg, ax = pl.subplots(2, 2, figsize = (19.2, 10.8))
+
+# original measure
+c = v
+im = ax[0,0].scatter(lon, lat, s = Scale(c), c = c,
+           cmap = pl.cm.magma_r)
+cb = fg.colorbar(im, ax = ax[0,0])
+cb.set_label('Degree centrality')
+
+# sern ensemble mean
+c = var.mean(axis = 0)
+im = ax[0,1].scatter(lon, lat, s = Scale(c), c = c,
+           cmap = pl.cm.magma_r)
+cb = fg.colorbar(im, ax = ax[0,1])
+cb.set_label('SERN Degree centrality')
+
+# corrected measure
+c = v - var.mean(axis = 0)
+im = ax[1,0].scatter(lon, lat, s = Scale(c), c = c,
+           vmax = c.max(), vmin = -c.max(),
+           cmap = pl.cm.seismic)
+cb = fg.colorbar(im, ax = ax[1,0])
+cb.set_label('Corrected degree centrality (original - SERN)')
+
+# percentiles
+c = np.array([percentileofscore(var[:,i], v[i]) for i in range(n)])
+im = ax[1,1].scatter(lon, lat, s = Scale(c), c = c,
+           vmax = 100, vmin = 0,
+           cmap = pl.cm.seismic)
+cb = fg.colorbar(im, ax = ax[1,1])
+cb.set_label('Eigenvector degree percentiles')
+
+pl.tight_layout()
+pl.savefig('sern_example_minimal.pdf')
 
